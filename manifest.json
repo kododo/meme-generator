@@ -1,0 +1,6 @@
+{
+  "name": "meme-generator",
+  "short_name": "meme-generator",
+  "start_url": "/",
+  "display": "standalone"
+}

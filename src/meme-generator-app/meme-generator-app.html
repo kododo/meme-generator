@@ -1,0 +1,83 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="../../bower_components/polymerfire/firebase.html">
+<link rel="import" href="../../bower_components/polymerfire/firebase-app.html">
+<link rel="import" href="../../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../../bower_components/polymerfire/firebase-storage-ref.html">
+
+
+<dom-module id="meme-generator-app">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+    <h2>Hello [[prop1]]!</h2>
+    <canvas id="canvas" width="300" height="200">Your browser don't support HTML5 canvas :(</canvas>
+    <img id="img" />
+    <button on-click="_draw">Draw</button>
+    <button on-click="_save">Save</button>
+    <firebase-app on-app-changed="_changed" id="app" auth-domain="meme-generator-e6dfe.firebaseapp.com" database-url="https://meme-generator-e6dfe.firebaseio.com"
+      api-key="AIzaSyDTP-eiQezleFsV2WddFBAhF_WEzx_8v_g" storage-bucket="meme-generator-e6dfe.appspot.com"
+      messaging-sender-id="571347985337"></firebase-app>
+    
+      <firebase-storage-ref id="ref"></firebase-storage-ref>
+
+
+    <div>Donwload: [[downloadUrl]] <button on-click="_getDownloadRef">DL</button></div>
+    <div>Notes:</div>
+    <template is="dom-repeat" items="{{data}}" as="note">
+      <div>[[note]]</div>
+    </template>
+  </template>
+
+  <script>
+    /**
+     * @customElement
+     * @polymer
+     */
+    class MemeGeneratorApp extends Polymer.Element {
+      static get is() { return 'meme-generator-app'; }
+      static get properties() {
+        return {
+          data: {
+            type: Object,
+            observer: '_changed'
+          }
+        };
+      }
+      _save(event) {
+        event.preventDefault();
+        this.$.canvas.toBlob(blob => {
+          //this.$.ref.reset();
+          //this.$.ref.path = '/' + new Date().getTime().toString() + '.png';
+          //this.$.ref.forceUnique = true;
+          const name = new Date().getTime().toString() + '.png';
+          this.$.ref.path = name;
+          const imgRef = this.$.ref.ref;
+          imgRef.put(blob).then(snapshot => {
+            console.log("subido!");
+            console.log(snapshot);
+            this.$.img.src = snapshot.downloadURL;
+          });
+        });
+      }
+      _draw(event) {
+        event.preventDefault();
+        const context = this.$.canvas.getContext('2d');
+        context.fillRect(10, 10, 50, 30);
+        context.fillRect(20,40,60,25);
+      }
+      _changed() {
+        console.log(arguments);
+      }
+      _getDownloadRef(event) {
+        event.preventDefault();
+        this.$.ref.getDownloadURL('perro-gato.jpg').then(u => console.log(u));
+      }
+    }
+
+    window.customElements.define(MemeGeneratorApp.is, MemeGeneratorApp);
+  </script>
+</dom-module>
